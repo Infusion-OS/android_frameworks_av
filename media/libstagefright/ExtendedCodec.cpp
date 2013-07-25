@@ -83,6 +83,8 @@ static const MetaKeyEntry MetaKeyTable[] {
    {kKeyWMAVirPktSize        , "wma-vir-pkt-size"       , INT32},  // int32_t
    {kKeyWMAChannelMask       , "wma-channel-mask"       , INT32},  // int32_t
    {kKeyFileFormat           , "file-format"            , STRING},  // cstring
+   {kKeyBlockAlign           , "block-align"            , INT32},
+   {kKeyRVVersion            , "rv-version"             , INT32},
 
    {kkeyAacFormatAdif        , "aac-format-adif"        , INT32},  // bool (int32_t)
    {kkeyAacFormatLtp         , "aac-format-ltp"         , INT32},
@@ -396,6 +398,8 @@ status_t ExtendedCodec::setAudioFormat(
         CHECK(msg->findInt32("channel-count", &numChannels));
         CHECK(msg->findInt32("sample-rate", &sampleRate));
         err = setAMRWBPLUSFormat(numChannels, sampleRate, OMXhandle, nodeID);
+    } else {
+        err = BAD_VALUE;
     }
     return err;
 }
@@ -421,6 +425,13 @@ status_t ExtendedCodec::setVideoFormat(
     } else if (!strcasecmp(MEDIA_MIMETYPE_VIDEO_DIVX311, mime)) {
         *compressionFormat= (OMX_VIDEO_CODINGTYPE)QOMX_VIDEO_CodingDivx;
     } else if (!strcasecmp(MEDIA_MIMETYPE_VIDEO_WMV, mime)) {
+        int32_t wmvVersion = 0;
+        if (msg->findInt32(getMsgKey(kKeyWMVVersion), &wmvVersion)) {
+            if (wmvVersion == 1) {
+                ALOGE("Unsupported WMV version %d", wmvVersion);
+                return ERROR_UNSUPPORTED;
+            }
+        }
         *compressionFormat = OMX_VIDEO_CodingWMV;
 #ifdef QCOM_ADDITIONAL_CODECS
     } else if (!strcasecmp(MEDIA_MIMETYPE_CONTAINER_MPEG2, mime)) {
@@ -1226,7 +1237,7 @@ bool ExtendedCodec::isSourcePauseRequired(const char *componentName) {
         ARG_TOUCH(OMXhandle);
         ARG_TOUCH(nodeID);
         ARG_TOUCH(isEncoder);
-        return OK;
+        return ERROR_UNSUPPORTED;
     }
 
     status_t ExtendedCodec::setAudioFormat(
@@ -1238,7 +1249,7 @@ bool ExtendedCodec::isSourcePauseRequired(const char *componentName) {
         ARG_TOUCH(OMXhandle);
         ARG_TOUCH(nodeID);
         ARG_TOUCH(isEncoder);
-        return OK;
+        return ERROR_UNSUPPORTED;
     }
 
     status_t ExtendedCodec::setVideoFormat(

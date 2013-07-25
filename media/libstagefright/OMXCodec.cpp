@@ -105,6 +105,7 @@
 #include <QCMediaDefs.h>
 #include <QCMetaData.h>
 #include <QOMX_AudioExtensions.h>
+#include <media/stagefright/ExtendedCodec.h>
 #endif
 #ifdef DTS_CODEC_M_
 #include "include/DTSUtils.h"
@@ -533,10 +534,12 @@ sp<MediaSource> OMXCodec::Create(
             return softwareCodec;
         }
 
+#ifdef ENABLE_AV_ENHANCEMENTS
         const char* ext_componentName = ExtendedCodec::overrideComponentName(quirks, meta, mime, createEncoder);
         if(ext_componentName != NULL) {
           componentName = ext_componentName;
         }
+#endif
 
         ALOGV("Attempting to allocate OMX node '%s'", componentName);
 
