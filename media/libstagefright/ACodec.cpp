@@ -2312,10 +2312,17 @@ status_t ACodec::setupFlacCodec(
         }
     }
 
+#ifdef QTI_FLAC_DECODER
     return setupRawAudioFormat(
             kPortIndexInput,
             sampleRate,
             numChannels, bitsPerSample);
+#else
+    return setupRawAudioFormat(
+            encoder ? kPortIndexInput : kPortIndexOutput,
+            sampleRate,
+            numChannels, bitsPerSample);
+#endif
 }
 
 status_t ACodec::setupRawAudioFormat(
